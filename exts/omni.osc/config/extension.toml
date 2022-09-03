@@ -1,0 +1,40 @@
+[package]
+# Semantic Versionning is used: https://semver.org/
+version = "0.1.0"
+
+# The title and description fields are primarily for displaying extension info in UI
+title = "OSC (Open Sound Control)"
+description="Send and receive OSC (Open Sound Control) messages"
+authors = ["NVIDIA"]
+repository = "https://github.com/NVIDIA-Omniverse/kit-osc"
+readme  = "docs/README.md"
+changelog = "docs/CHANGELOG.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
+
+# One of categories for UI.
+category = "Other"
+
+# Keywords for the extension
+keywords = ["kit", "osc"]
+
+[dependencies]
+"omni.kit.uiapp" = {}
+"omni.kit.pipapi" = {}
+"omni.graph" = {optional = true}
+"omni.graph.bundle.action" = {optional = true}
+
+# Main python module this extension provides, it will be publicly available as "import omni.osc.core".
+[[python.module]]
+name = "omni.osc"
+
+[python.pipapi]
+archiveDirs = ["vendor"]
+
+
+[settings.exts."omni.osc"]
+address = "localhost"
+port    = 3334
+
+[[test]]
+dependencies = ["omni.graph", "omni.kit.test"]

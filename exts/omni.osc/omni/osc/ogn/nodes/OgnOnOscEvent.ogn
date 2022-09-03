@@ -1,0 +1,42 @@
+{
+    "OnOscEvent": {
+        "description": [
+            "Executes for any OSC Message with a matching OSC Address Pattern"
+        ],
+        "version": 1,
+        "uiName": "On OSC Message",
+        "categories": [],
+        "scheduling": [
+            "compute-on-request",
+            "global-read"
+        ],
+        "language": "Python",
+        "state": {},
+        "inputs": {
+            "path": {
+                "type": "string",
+                "description": "A regex to match an OSC address pattern",
+                "uiName": "OSC Address Pattern Regex",
+                "default": "/.*"
+            }
+        },
+        "outputs": {
+            "path": {
+                "type": "string",
+                "description": "The OSC address pattern",
+                "uiName": "OSC Address Pattern"
+            },
+            "args": {
+                "type": "any",
+                "description": "The OSC arguments",
+                "uiName": "OSC Arguments",
+                "unvalidated": true
+            },
+            "execOut": {
+                "type": "execution",
+                "description": "Executes when the event is received",
+                "uiName": "Received"
+            }
+        }
+    }
+}

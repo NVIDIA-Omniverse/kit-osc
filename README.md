@@ -1,52 +1,131 @@
-# Extension Project Template
+# Open Sound Control Omniverse Kit Extension [omni.osc]
 
-This project was automatically generated.
+![demo.gif](/docs/images/demo.gif)
 
-- `app` - It is a folder link to the location of your *Omniverse Kit* based app.
-- `exts` - It is a folder where you can add new extensions. It was automatically added to extension search path. (Extension Manager -> Gear Icon -> Extension Search Path).
+Omniverse Kit extension for sending and receiving OSC (Open Sound Control) messages.
 
-Open this folder using Visual Studio Code. It will suggest you to install few extensions that will make python experience better.
+# Getting Started
 
-Look for "omni.kit.osc" extension in extension manager and enable it. Try applying changes to any python files, it will hot-reload and you can observe results immediately.
+Open the Community tab under Extensions window (`Window > Extensions`), search for `OSC`, and install and enable the `omni.osc` extension.
 
-Alternatively, you can launch your app from console with this folder added to search path and your extension enabled, e.g.:
+![extension-install](/docs/images/extension-install.png)
 
+You can find example USD stages that demonstrate how to use OSC with OmniGraph under [exts/omni.osc/data/examples](/exts/omni.osc/data/examples).
+
+## Running the server
+
+After installing and enabling the extension, you should see the following window.
+
+![server-ui-window](/docs/images/server-ui-window.png)
+
+Enter the private IP address of the computer running your Kit application and the desired port, then click `Start`. If you are prompted to configure your Windows Firewall, ensure that the Kit application is allowed to communicate with other devices on the private network.
+
+![windows-firewall](/docs/images/osc-start-windows-security-alert.png)
+
+You can find the private IP address of your computer by running `ipconfig` in the Windows terminal.
+
+![ipconfig](/docs/images/ipconfig.png)
+
+If you run the server on `localhost`, that means the server can only receive messages from OSC clients running on the same machine. If you want to receive messages from OSC clients running on other devices on the same network, you must run the server on an IP address that is visible to those devices.
+
+Once the server is running, confirm that it can successfully receive messages by inspecting the verbose console logs. It might be helpful to filter only the logs that originate from `omni.osc`.
+
+![console-logs](/docs/images/console-logs.png)
+
+## Receiving messages with Python
+
+Below is a python snippet that demonstrates how to handle OSC messages received by the server. It assumes that the OSC server configured above is running. You can paste and run the below snippet directly into the Omniverse Script Editor for testing.
+
+```python
+import carb
+import carb.events
+import omni.osc
+
+def on_event(event: carb.events.IEvent) -> None:
+    addr, args = omni.osc.osc_message_from_carb_event(event)
+    carb.log_info(f"Received OSC message: [{addr}, {args}]")
+
+sub = omni.osc.subscribe_to_osc_event_stream(on_event)
 ```
-> app\omni.code.bat --ext-folder exts --enable company.hello.world
+
+## Receiving messages with ActionGraph
+
+You can find example USD stages that demonstrate how to use OSC with OmniGraph under [exts/omni.osc/data/examples](/exts/omni.osc/data/examples).
+
+Search for `OSC` in the Action Graph nodes list and add the `On OSC Message` node to your graph. The node takes a single input,
+the OSC address path that this node will handle. This input can be a valid regular expression. Note that this input field does *not* support
+OSC pattern matching expressions. The node has two outputs:
+
+1. The actual OSC address path received
+2. The OSC message arguments
+
+Currently, this node can only handle OSC messages where each argument is a float. A single float value outputs as a double, and a list of float values outputs as a list of doubles. The actual output type is resolved at runtime after the very first message is received.
+
+![og-receive](/docs/images/og-receive.png)
+
+## Sending messages from Python
+
+`omni.osc` depends on [python-osc](https://pypi.org/project/python-osc/) and you can import this module directly in
+your own Python code to send OSC messages. Please see the [documentation](https://python-osc.readthedocs.io/en/latest/) for additional
+information and support.
+
+```python
+import random
+import time
+
+from pythonosc import udp_client
+
+client = udp_client.SimpleUDPClient("127.0.0.1",  3334)
+
+for x in range(9):
+    client.send_message("/filter", random.random())
 ```
 
-# App Link Setup
+You can paste and run the above snippet directly into the Omniverse Script Editor for testing.
 
-If `app` folder link doesn't exist or broken it can be created again. For better developer experience it is recommended to create a folder link named `app` to the *Omniverse Kit* app installed from *Omniverse Launcher*. Convenience script to use is included.
+## Sending messages from ActionGraph
 
-Run:
+This is not currently implemented.
 
-```
-> link_app.bat
-```
+## Limitations & Known Issues
 
-If successful you should see `app` folder link in the root of this repo.
-
-If multiple Omniverse apps is installed script will select recommended one. Or you can explicitly pass an app:
-
-```
-> link_app.bat --app create
-```
-
-You can also just pass a path to create link to:
-
-```
-> link_app.bat --path "C:/Users/bob/AppData/Local/ov/pkg/create-2021.3.4"
-```
+- OSC Bundles are not supported.
+- The OmniGraph `On OSC Message` node can only handle OSC messages containing lists of floating-point arguments.
+- If you see console warnings like the following `[Warning] [omni.osc.ogn.nodes.OgnOnOscEvent] Expected OSC arguments of type double4 but got double2`, it means that your On OSC Message node already handled an OSC message with arguments shaped like a `double4`, but now it's receiving OSC messages with arguments shaped like a `double2`. This happens because the output type of the node is resolved once and only once upon handling the first OSC message that matches the address pattern regex. You can fix this by re-opening your stage or deleting and re-creating the On OSC Message graph node.
 
 
-# Sharing Your Extensions
+# Help
 
-This folder is ready to be pushed to any git repository. Once pushed direct link to a git repository can be added to *Omniverse Kit* extension search paths.
+The below sections should help you diagnose any potential issues you may encounter while working with `omni.osc` extension.
 
-Link might look like this: `git://github.com/[user]/[your_repo].git?branch=main&dir=exts`
+## Unable to receive messages
 
-Notice `exts` is repo subfolder with extensions. More information can be found in "Git URL as Extension Search Paths" section of developers manual.
+1. First, enable verbose logs in the console (filter by the `omni.osc` extension). The server will log any messages received.
+2. Confirm that the computer running the Kit application and the device sending the OSC messages are on the same network.
+3. Confirm that kit.exe is allowed to communicate with the private network through the Windows Defender Firewall. Note that
+you may have multiple instances of kit.exe on this list. When in doubt, ensure that all of them have the appropriate permission.
+![windows-firewall](/docs/images/windows-firewall.png)
+4. Confirm that the Windows Defender Firewall allows incoming UDP traffic to the port in use.
+5. Confirm that the device sending the OSC messages is sending the messages via UDP to the correct IP address and port.
+6. Use a tool such as [wireshark](https://www.wireshark.org/) to confirm that the computer running the Kit application is receiving UDP traffic from the device.
 
-To add a link to your *Omniverse Kit* based app go into: Extension Manager -> Gear Icon -> Extension Search Path
+## Unable to send messages
 
+1. Confirm that the computer running the Kit application and the device receiving the OSC messages are on the same network.
+2. Confirm that kit.exe is allowed to communicate with the private network through the Windows Defender Firewall.
+3. Confirm that the device receiving the OSC messages is able to receive incoming UDP traffic at the port in use.
+
+# Contributing
+
+The source code for this repository is provided as-is and we are not accepting outside contributions.
+
+# License
+
+- The code in this repository is licensed under the Apache License 2.0. See [LICENSE](/LICENSE).
+- python-osc is licensed under the the Unlicense. See [exts/omni.osc/vendor/LICENSE-python-osc](/exts/omni.osc/vendor/LICENSE-python-osc).
+
+# Resources
+
+- [https://opensoundcontrol.stanford.edu/spec-1_0.html](https://opensoundcontrol.stanford.edu/spec-1_0.html)
+- [https://en.wikipedia.org/wiki/Open_Sound_Control](https://en.wikipedia.org/wiki/Open_Sound_Control)
+- [https://python-osc.readthedocs.io/en/latest/](https://python-osc.readthedocs.io/en/latest/)
