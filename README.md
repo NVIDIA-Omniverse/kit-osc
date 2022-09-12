@@ -10,7 +10,7 @@ Open the Community tab under Extensions window (`Window > Extensions`), search f
 
 ![extension-install](/docs/images/extension-install.png)
 
-You can find example USD stages that demonstrate how to use OSC with OmniGraph under [exts/omni.osc/data/examples](/exts/omni.osc/data/examples).
+You can find an example USD stages that demonstrate how to use the On Osc Message OmniGraph node at [exts/omni.osc/data/examples](/exts/omni.osc/data/examples).
 
 ## Running the server
 
@@ -50,22 +50,18 @@ sub = omni.osc.subscribe_to_osc_event_stream(on_event)
 
 ## Receiving messages with ActionGraph
 
-You can find example USD stages that demonstrate how to use OSC with OmniGraph under [exts/omni.osc/data/examples](/exts/omni.osc/data/examples).
-
 Search for `OSC` in the Action Graph nodes list and add the `On OSC Message` node to your graph. The node takes a single input,
 the OSC address path that this node will handle. This input can be a valid regular expression. Note that this input field does *not* support
-OSC pattern matching expressions. The node has two outputs:
-
-1. The actual OSC address path received
-2. The OSC message arguments
-
-Currently, this node can only handle OSC messages where each argument is a float. A single float value outputs as a double, and a list of float values outputs as a list of doubles. The actual output type is resolved at runtime after the very first message is received.
+OSC pattern matching expressions. The node outputs an OmniGraph bundle with two attributes named `address` and `arguments` which you
+can access by using the `Extract Attribute` node.
 
 ![og-receive](/docs/images/og-receive.png)
 
+You can find example USD stages that demonstrate how to configure an ActionGraph using this extension at [exts/omni.osc/data/examples](/exts/omni.osc/data/examples).
+
 ## Sending messages from Python
 
-`omni.osc` depends on [python-osc](https://pypi.org/project/python-osc/) and you can import this module directly in
+Since `omni.osc` depends on [python-osc](https://pypi.org/project/python-osc/), you can import this module directly in
 your own Python code to send OSC messages. Please see the [documentation](https://python-osc.readthedocs.io/en/latest/) for additional
 information and support.
 
@@ -77,8 +73,7 @@ from pythonosc import udp_client
 
 client = udp_client.SimpleUDPClient("127.0.0.1",  3334)
 
-for x in range(9):
-    client.send_message("/filter", random.random())
+client.send_message("/scale", [random.random(), random.random(), random.random()])
 ```
 
 You can paste and run the above snippet directly into the Omniverse Script Editor for testing.
@@ -89,10 +84,8 @@ This is not currently implemented.
 
 ## Limitations & Known Issues
 
-- OSC Bundles are not supported.
+- OSC Bundles are currently not supported.
 - The OmniGraph `On OSC Message` node can only handle OSC messages containing lists of floating-point arguments.
-- If you see console warnings like the following `[Warning] [omni.osc.ogn.nodes.OgnOnOscEvent] Expected OSC arguments of type double4 but got double2`, it means that your On OSC Message node already handled an OSC message with arguments shaped like a `double4`, but now it's receiving OSC messages with arguments shaped like a `double2`. This happens because the output type of the node is resolved once and only once upon handling the first OSC message that matches the address pattern regex. You can fix this by re-opening your stage or deleting and re-creating the On OSC Message graph node.
-
 
 # Help
 
@@ -122,7 +115,7 @@ The source code for this repository is provided as-is and we are not accepting o
 # License
 
 - The code in this repository is licensed under the Apache License 2.0. See [LICENSE](/LICENSE).
-- python-osc is licensed under the the Unlicense. See [exts/omni.osc/vendor/LICENSE-python-osc](/exts/omni.osc/vendor/LICENSE-python-osc).
+- python-osc is licensed under the Unlicense. See [exts/omni.osc/vendor/LICENSE-python-osc](/exts/omni.osc/vendor/LICENSE-python-osc).
 
 # Resources
 
