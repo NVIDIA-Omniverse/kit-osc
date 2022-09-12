@@ -1,7 +1,7 @@
 {
     "OnOscEvent": {
         "description": [
-            "Executes for any OSC Message with a matching OSC Address Pattern"
+            "Receive OSC Messages"
         ],
         "version": 1,
         "uiName": "On OSC Message",
@@ -15,26 +15,20 @@
         "inputs": {
             "path": {
                 "type": "string",
-                "description": "A regex to match an OSC address pattern",
-                "uiName": "OSC Address Pattern Regex",
+                "description": "A regex to match an OSC Address",
+                "uiName": "OSC Address",
                 "default": "/.*"
             }
         },
         "outputs": {
-            "path": {
-                "type": "string",
-                "description": "The OSC address pattern",
-                "uiName": "OSC Address Pattern"
-            },
-            "args": {
-                "type": "any",
-                "description": "The OSC arguments",
-                "uiName": "OSC Arguments",
-                "unvalidated": true
+            "message": {
+                "type": "bundle",
+                "description": "The OSC message output as an OmniGraph Bundle with attributes \"address\" and \"arguments\"",
+                "uiName": "OSC Message"
             },
             "execOut": {
                 "type": "execution",
-                "description": "Executes when the event is received",
+                "description": "Executes when the OSC message is received",
                 "uiName": "Received"
             }
         }

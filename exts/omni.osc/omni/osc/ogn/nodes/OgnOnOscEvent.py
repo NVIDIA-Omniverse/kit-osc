@@ -19,6 +19,7 @@ import carb.events
 import carb.profiler
 import omni.graph.core as og
 import omni.osc
+from omni.osc.core import OSC_MESSAGE_ADDRESS_STR, OSC_MESSAGE_ARGUMENTS_STR
 
 from .. import OgnOnOscEventDatabase
 
@@ -115,7 +116,7 @@ class OgnOnOscEvent:
         state.sub = None
 
     @staticmethod
-    def validate_osc_message_args(args: List[Any]) -> bool:
+    def check_all_args_are_floats(args: List[Any]) -> bool:
         """
         Returns true if the OSC message arguments has the shape of List[float]
         """
@@ -123,33 +124,12 @@ class OgnOnOscEvent:
         return all_args_are_float
 
     @staticmethod
-    def resolve_osc_message_args_type(node: og.Node, args: List[Any]) -> bool:
-        """
-        Attempt to resolve the node outputs:args attribute and return True if successful
-        """
-        args_attr: og.Attribute = node.get_attribute("outputs:args")
-        expected_type = args_attr.get_resolved_type()
-        actual_type = og.Type(og.BaseDataType.DOUBLE, tuple_count=len(args), array_depth=0)
-        if expected_type.base_type == og.BaseDataType.UNKNOWN:
-            # The attribute type is unresolved so resolve it now
-            args_attr.set_resolved_type(actual_type)
-            return True
-        elif expected_type != actual_type:
-            # The attribute type was already resolved, but the type of args does not match
-            carb.log_warn(f"Expected OSC arguments of type {expected_type} but got {actual_type}")
-            return False
-        else:
-            # Nothing to do, return true
-            return True
-
-    @staticmethod
     @carb.profiler.profile
     def compute(db: og.Database) -> bool:
         state: OgnOnOscEventInternalState = db.internal_state
         osc_path_regex = db.inputs.path
 
-        if state.first_time_subscribe(db.node, osc_path_regex):
-            return True
+        state.first_time_subscribe(db.node, osc_path_regex)
 
         event = state.try_pop_event()
 
@@ -158,18 +138,29 @@ class OgnOnOscEvent:
 
         try:
             addr, args = omni.osc.osc_message_from_carb_event(event)
+            # Populate the output bundle
+            bundle: og._impl.bundles.BundleContents = db.outputs.message
+            bundle.clear()
 
-            node: og.Node = db.node
+            # Update the address attribute
+            addr_attribute = bundle.insert((og.Type(og.BaseDataType.TOKEN), OSC_MESSAGE_ADDRESS_STR))
+            addr_attribute.value = addr
 
-            if not OgnOnOscEvent.validate_osc_message_args(args):
-                carb.log_error(f"OSC message arguments must be of type float, got: {args}")
+            # Update the arguments attribute
+            all_args_are_floats = OgnOnOscEvent.check_all_args_are_floats(args)
+            # NOTE(jshrake): This node currently only supports OSC arguments shaped like a List[Float]
+            if all_args_are_floats:
+                if len(args) == 1:
+                    # Argument list contains a single element, write it as a double
+                    args_attribute = bundle.insert((og.Type(og.BaseDataType.DOUBLE),  OSC_MESSAGE_ARGUMENTS_STR))
+                    args_attribute.value = args[0]
+                elif len(args) > 1:
+                    # Argument list contains multiple element, write it as a list
+                    args_attribute = bundle.insert((og.Type(og.BaseDataType.DOUBLE, tuple_count=len(args), array_depth=0), OSC_MESSAGE_ARGUMENTS_STR))
+                    args_attribute.value = args
+            else:
+                carb.log_warn(f"OnOscMessage node expected OSC message arguments to be of type List[Float], instead got {args}")
                 return False
-
-            if not OgnOnOscEvent.resolve_osc_message_args_type(node, args):
-                return False
-
-            db.outputs.path = addr
-            db.outputs.args = args if len(args) > 1 else args[0]
             db.outputs.execOut = og.ExecutionAttributeState.ENABLED
         except Exception as e:
             carb.log_error(f"Error in OgnOnOscEvent::compute: {e}")
