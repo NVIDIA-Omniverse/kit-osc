@@ -1,16 +1,16 @@
-# Open Sound Control Omniverse Kit Extension [omni.osc]
+# OSC Omniverse Kit Extension [omni.osc]
+
+Omniverse Kit extension for sending and receiving OSC (Open Sound Control) messages.
 
 ![demo.gif](/docs/images/demo.gif)
 
-Omniverse Kit extension for sending and receiving OSC (Open Sound Control) messages.
+*The OSC control surface app running on the iPad is [TouchOSC](https://hexler.net/touchosc).*
 
 # Getting Started
 
 Open the Community tab under Extensions window (`Window > Extensions`), search for `OSC`, and install and enable the `omni.osc` extension.
 
 ![extension-install](/docs/images/extension-install.png)
-
-You can find example USD stages that demonstrate how to use the `On Osc Message` OmniGraph node at [exts/omni.osc/data/examples](/exts/omni.osc/data/examples).
 
 ## Running the server
 
