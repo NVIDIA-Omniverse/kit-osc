@@ -10,7 +10,7 @@ Open the Community tab under Extensions window (`Window > Extensions`), search f
 
 ![extension-install](/docs/images/extension-install.png)
 
-You can find an example USD stages that demonstrate how to use the On Osc Message OmniGraph node at [exts/omni.osc/data/examples](/exts/omni.osc/data/examples).
+You can find example USD stages that demonstrate how to use the `On Osc Message` OmniGraph node at [exts/omni.osc/data/examples](/exts/omni.osc/data/examples).
 
 ## Running the server
 
