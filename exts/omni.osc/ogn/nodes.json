@@ -1,0 +1,11 @@
+{
+    "nodes": {
+        "omni.osc.OnOscEvent": {
+            "description": "OmniGraph node for receiving OSC event data.",
+            "version": 1,
+            "uiName": "On OSC Event",
+            "extension": "omni.osc",
+            "language": "Python"
+        }
+    }
+}

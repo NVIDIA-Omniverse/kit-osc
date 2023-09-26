@@ -1,6 +1,6 @@
 [package]
 # Semantic Versionning is used: https://semver.org/
-version = "0.2.2"
+version = "0.3.0"
 
 # The title and description fields are primarily for displaying extension info in UI
 title = "OSC (Open Sound Control)"
@@ -21,8 +21,8 @@ keywords = ["kit", "osc"]
 [dependencies]
 "omni.kit.uiapp" = {}
 "omni.kit.pipapi" = {}
-"omni.graph" = {optional = true}
-"omni.graph.bundle.action" = {optional = true}
+"omni.graph" = {}
+"omni.graph.bundle.action" = {}
 
 # Main python module this extension provides, it will be publicly available as "import omni.osc.core".
 [[python.module]]
