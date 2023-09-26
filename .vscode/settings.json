@@ -431,7 +431,6 @@
 
     // Python & Pylance Setup
     "python.languageServer": "Pylance",
-    "python.pythonPath": "${workspaceFolder}/app/kit/python/python.exe",
     "python.defaultInterpreterPath": "${workspaceFolder}/app/kit/python/python.exe",
 
     // We use "black" as a formatter:
