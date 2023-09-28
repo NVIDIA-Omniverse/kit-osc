@@ -1,6 +1,6 @@
 [package]
 # Semantic Versionning is used: https://semver.org/
-version = "0.3.0"
+version = "0.3.1"
 
 # The title and description fields are primarily for displaying extension info in UI
 title = "OSC (Open Sound Control)"
